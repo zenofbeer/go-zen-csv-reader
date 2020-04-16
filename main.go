@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
@@ -10,33 +10,27 @@ import (
 
 func main() {
 	fmt.Println("Preparing to read file")
-	// open file and create scanner on top of it.
-	file, err := os.Open("./us-first-names-database-QueryResult (1).csv")
+
+	file, err := os.Open("./iris.data")
 	if err != nil {
 		log.Fatal(err)
 	}
-	scanner := bufio.NewScanner(file)
 
-	scanner.Split(bufio.ScanLines)
+	defer file.Close()
 
-	scanning := true
+	reader := csv.NewReader(file)
 
-	for {
-		success := scanner.Scan()
-		if success == false {
-			err = scanner.Err()
-			if err == nil {
-				log.Println("Scan completed and reached EOF.")
-				scanning = success
-			} else {
-				log.Fatal()
-			}
-		} else {
-			output := strings.Split(scanner.Text(), ",")
-			fmt.Println(output[0], " - ", output[1])
-		}
-		if !scanning {
-			break
-		}
+	// reads unknown number of fields
+	reader.FieldsPerRecord = -1
+
+	rawData, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// test to print out the data
+	// ToDo: trim the trailing comma.
+	for i := 0; i < len(rawData); i++ {
+		println(strings.Join(rawData[i], ","))
 	}
 }
